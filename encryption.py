@@ -1,5 +1,4 @@
 import os
-import json
 import cryptools
 import constants
 
@@ -33,12 +32,12 @@ class SymmetricCipher(Cipher):
 		
 		padded_text = cryptools.pad(text)
 		
-		return self.cipher.encrypt(padded_text)
+		return self.cipher.update(padded_text) + self.cipher.finalize()
 
 
 	def Decrypt(self, ciphertext):
 		
-		decrypted_content = self.decipher.decrypt(ciphertext)
+		decrypted_content = self.decipher.update(ciphertext) + self.decipher.finalize()
 		
 		unpadded_text = cryptools.unpad(decrypted_content)
 		
@@ -56,10 +55,15 @@ class AsymmetricCipher(Cipher):
 
 
 	def Encrypt(self, text):
-		
-		return self.cipher.encrypt(text)
+		return self.cipher.encrypt(
+			text,
+			cryptools.oaep()
+		)
 
 
 	def Decrypt(self, ciphertext):
 		
-		return self.decipher.decrypt(ciphertext)
+		return self.decipher.decrypt(
+			ciphertext,
+			cryptools.oaep()
+		)
