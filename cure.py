@@ -44,7 +44,7 @@ for current_directory, sub_directories, sub_files in os.walk(OUTSIDE_DIRECTORY):
         aes_iv = b64decode(json_dict['IV'])
 
         if cryptools.HMAC(ciphertext, hmac_key) != tag:
-            print '(INTEGRITY COMPRIMISED) CIPHERTEXT HAS BEEN CHANGED FOR %s ', file
+            print '(INTEGRITY COMPRIMISED) CIPHERTEXT HAS BEEN CHANGED FOR %s ' % file
             sys.exit(1)
 
         with open(os.path.join(current_directory, fileName + '.' + ext), 'wb') as f:
