@@ -1,6 +1,6 @@
 # Ransomware
 
-This is a secured ransomware built using python with secured backend built with NodeJS.
+This is a ransomware built using python with secured backend built with NodeJS.
 
 ## Getting Started
 
